@@ -1,65 +1,115 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useRouter } from 'next/navigation';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
+import { useActiveEvent } from '@/hooks/use-active-event';
+import { AppHeader } from '@/components/app-header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  BuildingIcon,
+  StoreIcon,
+  UsersIcon,
+  CalendarIcon,
+} from 'lucide-react';
+import { useEffect } from 'react';
+
+export default function HomePage() {
+  const router = useRouter();
+  const { evento, hasEvent } = useActiveEvent();
+
+  const stats = useLiveQuery(async () => {
+    const expositores = await db.empresas
+      .where('tipo')
+      .equals('expositor')
+      .count();
+    const fornecedores = await db.empresas
+      .where('tipo')
+      .equals('fornecedor')
+      .count();
+    return { expositores, fornecedores };
+  });
+
+  useEffect(() => {
+    if (!hasEvent) {
+      router.replace('/evento');
+    }
+  }, [hasEvent, router]);
+
+  if (!hasEvent) return null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-background">
+      <AppHeader title="Prospecção" />
+
+      <div className="p-4 space-y-6">
+        <button
+          onClick={() => router.push('/evento')}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <CalendarIcon className="h-4 w-4" />
+          <span className="font-medium">{evento?.nome ?? 'Carregando...'}</span>
+        </button>
+
+        <div className="grid gap-3">
+          <Button
+            onClick={() => router.push('/expositor')}
+            size="lg"
+            className="h-20 text-lg justify-start gap-4"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <BuildingIcon className="h-6 w-6" />
+            <div className="text-left">
+              <div>Novo Expositor</div>
+              <div className="text-xs font-normal opacity-80">
+                Potencial cliente para evento futuro
+              </div>
+            </div>
+          </Button>
+
+          <Button
+            onClick={() => router.push('/fornecedor')}
+            variant="secondary"
+            size="lg"
+            className="h-20 text-lg justify-start gap-4"
           >
-            Documentation
-          </a>
+            <StoreIcon className="h-6 w-6" />
+            <div className="text-left">
+              <div>Novo Fornecedor</div>
+              <div className="text-xs font-normal opacity-80">
+                Prestador de serviço para a agência
+              </div>
+            </div>
+          </Button>
         </div>
-      </main>
+
+        <Card>
+          <CardContent className="py-4">
+            <button
+              onClick={() => router.push('/contatos')}
+              className="flex w-full items-center gap-3"
+            >
+              <UsersIcon className="h-5 w-5 text-muted-foreground" />
+              <span className="flex-1 text-left font-medium">
+                Contatos salvos
+              </span>
+              <div className="flex gap-2">
+                {stats && (
+                  <>
+                    <Badge variant="outline">
+                      {stats.expositores} expositor{stats.expositores !== 1 ? 'es' : ''}
+                    </Badge>
+                    <Badge variant="secondary">
+                      {stats.fornecedores} fornecedor{stats.fornecedores !== 1 ? 'es' : ''}
+                    </Badge>
+                  </>
+                )}
+              </div>
+            </button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
