@@ -1,13 +1,6 @@
+import * as XLSX from 'xlsx';
 import { db } from './db';
 import type { TipoEmpresa } from './types';
-
-function escapeCsv(value: string | undefined | null): string {
-  if (!value) return '';
-  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-  return value;
-}
 
 async function buildLookup(table: 'cargos' | 'segmentos' | 'tipos_servico' | 'faixas_preco' | 'eventos' | 'regioes_atuacao' | 'dores' | 'interesses_solucao') {
   const items = await db[table].toArray();
@@ -22,7 +15,7 @@ function resolveLookupIds(ids: string[], lookup: Map<string, string>): string {
   return ids.map((id) => lookup.get(id) ?? '').filter(Boolean).join('; ');
 }
 
-export async function exportCsv(filterType?: TipoEmpresa) {
+async function getExportData(filterType?: TipoEmpresa) {
   const [cargos, segmentos, tiposServico, faixasPreco, eventos, regioes, dores, interesses] = await Promise.all([
     buildLookup('cargos'),
     buildLookup('segmentos'),
@@ -47,71 +40,98 @@ export async function exportCsv(filterType?: TipoEmpresa) {
     oppsByEmpresa.set(opp.empresa_id, list);
   }
 
-  const headers = [
-    'Tipo',
-    'Empresa',
-    'Contato',
-    'WhatsApp',
-    'Email',
-    'Cargo',
-    'Segmento',
-    'Tamanho Estande',
-    'Tipo Serviço',
-    'Regiões Atuação',
-    'Faixa Preço',
-    'Instagram/Site',
-    'Observações',
-    'Evento Coleta',
-    'Oportunidades - Evento',
-    'Oportunidades - Dores',
-    'Oportunidades - Interesses',
-    'Data Cadastro',
-  ];
-
   const rows = empresas.map((e) => {
     const opps = oppsByEmpresa.get(e.id) ?? [];
     const oppEventos = opps.map((o) => o.evento_futuro_id ? eventos.get(o.evento_futuro_id) ?? '' : '').filter(Boolean).join('; ');
     const oppDores = opps.flatMap((o) => o.dores.map((id) => dores.get(id) ?? '')).filter(Boolean).join('; ');
     const oppInteresses = opps.flatMap((o) => o.interesses_solucao.map((id) => interesses.get(id) ?? '')).filter(Boolean).join('; ');
 
-    return [
-      e.tipo === 'expositor' ? 'Expositor' : 'Fornecedor',
-      e.nome,
-      e.nome_contato,
-      e.whatsapp,
-      e.email,
-      e.cargo_id ? cargos.get(e.cargo_id) : '',
-      e.segmento_id ? segmentos.get(e.segmento_id) : '',
-      e.tamanho_estande,
-      e.tipo_servico_id ? tiposServico.get(e.tipo_servico_id) : '',
-      resolveLookupIds(e.regioes_atuacao ?? [], regioes),
-      e.faixa_preco_id ? faixasPreco.get(e.faixa_preco_id) : '',
-      e.instagram_site,
-      e.observacoes,
-      e.evento_coleta_id ? eventos.get(e.evento_coleta_id) : '',
-      oppEventos,
-      oppDores,
-      oppInteresses,
-      new Date(e.criado_em).toLocaleDateString('pt-BR'),
-    ].map(escapeCsv).join(',');
+    return {
+      'Tipo': e.tipo === 'expositor' ? 'Expositor' : 'Fornecedor',
+      'Empresa': e.nome,
+      'Contato': e.nome_contato ?? '',
+      'WhatsApp': e.whatsapp ?? '',
+      'Email': e.email ?? '',
+      'Cargo': e.cargo_id ? cargos.get(e.cargo_id) ?? '' : '',
+      'Segmento': e.segmento_id ? segmentos.get(e.segmento_id) ?? '' : '',
+      'Tamanho Estande': e.tamanho_estande ?? '',
+      'Tipo Serviço': e.tipo_servico_id ? tiposServico.get(e.tipo_servico_id) ?? '' : '',
+      'Regiões Atuação': resolveLookupIds(e.regioes_atuacao ?? [], regioes),
+      'Faixa Preço': e.faixa_preco_id ? faixasPreco.get(e.faixa_preco_id) ?? '' : '',
+      'Instagram/Site': e.instagram_site ?? '',
+      'Observações': e.observacoes ?? '',
+      'Evento Coleta': e.evento_coleta_id ? eventos.get(e.evento_coleta_id) ?? '' : '',
+      'Oportunidades - Evento': oppEventos,
+      'Oportunidades - Dores': oppDores,
+      'Oportunidades - Interesses': oppInteresses,
+      'Data Cadastro': new Date(e.criado_em).toLocaleDateString('pt-BR'),
+    };
   });
 
-  const bom = '﻿';
-  const csv = bom + [headers.join(','), ...rows].join('\r\n');
+  return { rows, count: empresas.length };
+}
 
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-
-  const date = new Date().toISOString().slice(0, 10);
-  const suffix = filterType ? `-${filterType}es` : '';
-  a.download = `contatos-gfm${suffix}-${date}.csv`;
-
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
 
-  return empresas.length;
+function getFilename(filterType?: TipoEmpresa, ext = 'xlsx') {
+  const date = new Date().toISOString().slice(0, 10);
+  const suffix = filterType ? `-${filterType}es` : '';
+  return `contatos-gfm${suffix}-${date}.${ext}`;
+}
+
+export async function exportXlsx(filterType?: TipoEmpresa) {
+  const { rows, count } = await getExportData(filterType);
+  if (count === 0) return 0;
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  const headers = Object.keys(rows[0]);
+  ws['!cols'] = headers.map((h) => {
+    const maxLen = Math.max(
+      h.length,
+      ...rows.map((r) => (r[h as keyof typeof r] ?? '').toString().length)
+    );
+    return { wch: Math.min(Math.max(maxLen + 2, 12), 40) };
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Contatos');
+
+  const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  downloadBlob(blob, getFilename(filterType, 'xlsx'));
+
+  return count;
+}
+
+export async function exportCsv(filterType?: TipoEmpresa) {
+  const { rows, count } = await getExportData(filterType);
+  if (count === 0) return 0;
+
+  const headers = Object.keys(rows[0]);
+  const csvRows = rows.map((row) =>
+    headers.map((h) => {
+      const val = row[h as keyof typeof row] ?? '';
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`;
+      }
+      return val;
+    }).join(',')
+  );
+
+  const bom = '﻿';
+  const csv = bom + [headers.join(','), ...csvRows].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  downloadBlob(blob, getFilename(filterType, 'csv'));
+
+  return count;
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { exportCsv } from '@/lib/export-csv';
+import { exportXlsx } from '@/lib/export-csv';
 import { AppHeader } from '@/components/app-header';
 import { ContactCard } from '@/components/contact-card';
 import { Input } from '@/components/ui/input';
@@ -40,9 +40,9 @@ export default function ContatosPage() {
     setExporting(true);
     try {
       const filterArg = filter === 'todos' ? undefined : filter;
-      const count = await exportCsv(filterArg);
+      const count = await exportXlsx(filterArg);
       toast.success(`${count} contato(s) exportado(s)!`, {
-        description: 'Arquivo CSV salvo na pasta de downloads.',
+        description: 'Arquivo Excel salvo na pasta de downloads.',
       });
     } catch {
       toast.error('Erro ao exportar CSV');
