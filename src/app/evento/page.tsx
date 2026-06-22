@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckIcon, PlusIcon } from 'lucide-react';
+import { CheckIcon, PlusIcon, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -50,9 +50,12 @@ export default function EventoPage() {
       <AppHeader title="Selecionar Evento" showBack={!!eventId} />
 
       <div className="p-4 space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Selecione o evento onde você está coletando contatos.
-        </p>
+        <div className="flex items-center gap-2.5 px-1">
+          <CalendarIcon className="h-4 w-4 text-[#f0a500]" />
+          <p className="text-sm text-muted-foreground">
+            Selecione o evento onde você está coletando contatos.
+          </p>
+        </div>
 
         {eventos && eventos.length > 0 && (
           <div className="space-y-2">
@@ -60,20 +63,22 @@ export default function EventoPage() {
               <Card
                 key={evento.id}
                 className={cn(
-                  'cursor-pointer transition-colors hover:bg-muted/50',
-                  evento.id === eventId && 'border-primary bg-primary/5'
+                  'cursor-pointer transition-all',
+                  evento.id === eventId
+                    ? 'border-[#f0a500] bg-[#f0a500]/5 shadow-sm'
+                    : 'hover:bg-muted/50'
                 )}
                 onClick={() => handleSelect(evento.id)}
               >
                 <CardContent className="flex items-center gap-3 py-3">
-                  <CheckIcon
-                    className={cn(
-                      'h-5 w-5 shrink-0',
-                      evento.id === eventId
-                        ? 'text-primary opacity-100'
-                        : 'opacity-0'
-                    )}
-                  />
+                  <div className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+                    evento.id === eventId
+                      ? 'bg-[#f0a500] text-[#102a43]'
+                      : 'bg-muted text-muted-foreground'
+                  )}>
+                    <CheckIcon className="h-4 w-4" />
+                  </div>
                   <div className="flex-1">
                     <p className="font-medium">{evento.nome}</p>
                     {evento.data && (
@@ -92,7 +97,7 @@ export default function EventoPage() {
           <Button
             variant="outline"
             onClick={() => setShowCreate(true)}
-            className="w-full"
+            className="w-full border-dashed"
           >
             <PlusIcon className="mr-2 h-4 w-4" />
             Criar novo evento
@@ -107,6 +112,7 @@ export default function EventoPage() {
                   value={novoNome}
                   onChange={(e) => setNovoNome(e.target.value)}
                   placeholder='Ex: "Formóbile 2026"'
+                  className="bg-background"
                   autoFocus
                 />
               </div>
@@ -117,6 +123,7 @@ export default function EventoPage() {
                   type="date"
                   value={novaData}
                   onChange={(e) => setNovaData(e.target.value)}
+                  className="bg-background"
                 />
               </div>
               <div className="flex gap-2">
@@ -130,7 +137,7 @@ export default function EventoPage() {
                 <Button
                   onClick={handleCreate}
                   disabled={!novoNome.trim()}
-                  className="flex-1"
+                  className="flex-1 bg-[#f0a500] text-[#102a43] hover:bg-[#d99400]"
                 >
                   Criar e selecionar
                 </Button>

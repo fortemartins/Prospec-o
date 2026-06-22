@@ -2,13 +2,13 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Prospecção Feiras',
-    short_name: 'Prospecção',
-    description: 'App de prospecção para feiras corporativas',
+    name: 'GFM Eventos - Prospecção',
+    short_name: 'GFM Prospecção',
+    description: 'App de prospecção para feiras corporativas - GFM Eventos',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#0f172a',
+    background_color: '#102a43',
+    theme_color: '#102a43',
     orientation: 'portrait',
     icons: [
       {

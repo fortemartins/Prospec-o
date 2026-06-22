@@ -1,25 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const gantari = localFont({
+  src: [
+    {
+      path: "../Familia Gantari/Gantari-VariableFont_wght.ttf",
+      style: "normal",
+    },
+    {
+      path: "../Familia Gantari/Gantari-Italic-VariableFont_wght.ttf",
+      style: "italic",
+    },
+  ],
+  variable: "--font-gantari",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Prospecção Feiras",
-  description: "App de prospecção para feiras corporativas",
+  title: "GFM Eventos - Prospecção",
+  description: "App de prospecção para feiras corporativas - GFM Eventos",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
-    title: "Prospecção",
+    statusBarStyle: "black-translucent",
+    title: "GFM Prospecção",
   },
   formatDetection: {
     telephone: false,
@@ -27,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#102a43",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -42,9 +47,9 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${gantari.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-[family-name:var(--font-gantari)]">
         {children}
         <Toaster position="top-center" richColors />
       </body>

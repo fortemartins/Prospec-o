@@ -1,4 +1,11 @@
 <svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'>
-  <rect width='192' height='192' rx='28.799999999999997' fill='#0f172a'/>
-  <text x='50%' y='55%' font-family='Arial,sans-serif' font-size='67.19999999999999' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'>PF</text>
+  <rect width='192' height='192' rx='32' fill='#102a43'/>
+  <!-- Diagonal stripes -->
+  <rect x='36' y='40' width='14' height='56' rx='3' transform='rotate(-15 36 40)' fill='#f0a500'/>
+  <rect x='58' y='40' width='14' height='56' rx='3' transform='rotate(-15 58 40)' fill='#f0a500'/>
+  <rect x='80' y='40' width='14' height='56' rx='3' transform='rotate(-15 80 40)' fill='#f0a500'/>
+  <!-- GFM text -->
+  <text x='105' y='106' font-family='Arial,Helvetica,sans-serif' font-size='58' fill='white' font-weight='900' font-style='italic' letter-spacing='-2'>GFM</text>
+  <!-- eventos text -->
+  <text x='118' y='130' font-family='Arial,Helvetica,sans-serif' font-size='22' fill='#f0a500' font-weight='500'>eventos</text>
 </svg>

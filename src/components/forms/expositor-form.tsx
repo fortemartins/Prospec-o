@@ -19,10 +19,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 import { ComboboxWithAdd } from '@/components/combobox-with-add';
 import { OportunidadeForm } from './oportunidade-form';
-import { PlusIcon } from 'lucide-react';
+import { PlusIcon, BuildingIcon, UserIcon, PhoneIcon, TargetIcon } from 'lucide-react';
+
+function FormSection({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Icon className="h-4 w-4 text-[#f0a500]" />
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-foreground/70">{title}</h2>
+      </div>
+      <Card>
+        <CardContent className="space-y-4 pt-4 pb-4">
+          {children}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export function ExpositorForm() {
   const router = useRouter();
@@ -105,146 +121,153 @@ export function ExpositorForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
-      <div className="space-y-2">
-        <Label htmlFor="nome">Nome da empresa *</Label>
-        <Input id="nome" {...register('nome')} placeholder="Nome da empresa" />
-        {errors.nome && (
-          <p className="text-sm text-destructive">{errors.nome.message}</p>
-        )}
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-4 pb-8">
+      <FormSection title="Empresa" icon={BuildingIcon}>
+        <div className="space-y-2">
+          <Label htmlFor="nome">Nome da empresa *</Label>
+          <Input id="nome" {...register('nome')} placeholder="Nome da empresa" className="bg-background" />
+          {errors.nome && (
+            <p className="text-sm text-destructive">{errors.nome.message}</p>
+          )}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="nome_contato">Nome do contato *</Label>
-        <Input
-          id="nome_contato"
-          {...register('nome_contato')}
-          placeholder="Nome da pessoa"
-        />
-        {errors.nome_contato && (
-          <p className="text-sm text-destructive">{errors.nome_contato.message}</p>
-        )}
-      </div>
+        <div className="space-y-2">
+          <Label>Segmento *</Label>
+          <ComboboxWithAdd
+            tableName="segmentos"
+            value={segmentoId}
+            onChange={(id) => setValue('segmento_id', id, { shouldValidate: true })}
+            placeholder="Selecionar segmento"
+          />
+          {errors.segmento_id && (
+            <p className="text-sm text-destructive">{errors.segmento_id.message}</p>
+          )}
+        </div>
 
-      <div className="space-y-2">
-        <Label>Cargo *</Label>
-        <ComboboxWithAdd
-          tableName="cargos"
-          value={cargoId}
-          onChange={(id) => setValue('cargo_id', id, { shouldValidate: true })}
-          placeholder="Selecionar cargo"
-        />
-        {errors.cargo_id && (
-          <p className="text-sm text-destructive">{errors.cargo_id.message}</p>
-        )}
-      </div>
+        <div className="space-y-2">
+          <Label>Tamanho do estande *</Label>
+          <Select
+            value={tamanhoEstande}
+            onValueChange={(val) =>
+              setValue('tamanho_estande', val as ExpositorFormData['tamanho_estande'], {
+                shouldValidate: true,
+              })
+            }
+          >
+            <SelectTrigger className="w-full bg-background">
+              <SelectValue placeholder="Selecionar tamanho" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Até 9m²">Até 9m² (Pequeno)</SelectItem>
+              <SelectItem value="10-30m²">10-30m² (Médio)</SelectItem>
+              <SelectItem value="30m²+">30m²+ (Grande)</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.tamanho_estande && (
+            <p className="text-sm text-destructive">{errors.tamanho_estande.message}</p>
+          )}
+        </div>
+      </FormSection>
 
-      <div className="space-y-2">
-        <Label>Segmento *</Label>
-        <ComboboxWithAdd
-          tableName="segmentos"
-          value={segmentoId}
-          onChange={(id) => setValue('segmento_id', id, { shouldValidate: true })}
-          placeholder="Selecionar segmento"
-        />
-        {errors.segmento_id && (
-          <p className="text-sm text-destructive">{errors.segmento_id.message}</p>
-        )}
-      </div>
+      <FormSection title="Contato" icon={UserIcon}>
+        <div className="space-y-2">
+          <Label htmlFor="nome_contato">Nome do contato *</Label>
+          <Input
+            id="nome_contato"
+            {...register('nome_contato')}
+            placeholder="Nome da pessoa"
+            className="bg-background"
+          />
+          {errors.nome_contato && (
+            <p className="text-sm text-destructive">{errors.nome_contato.message}</p>
+          )}
+        </div>
 
-      <div className="space-y-2">
-        <Label>Tamanho do estande *</Label>
-        <Select
-          value={tamanhoEstande}
-          onValueChange={(val) =>
-            setValue('tamanho_estande', val as ExpositorFormData['tamanho_estande'], {
-              shouldValidate: true,
-            })
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecionar tamanho" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Até 9m²">Até 9m² (Pequeno)</SelectItem>
-            <SelectItem value="10-30m²">10-30m² (Médio)</SelectItem>
-            <SelectItem value="30m²+">30m²+ (Grande)</SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.tamanho_estande && (
-          <p className="text-sm text-destructive">{errors.tamanho_estande.message}</p>
-        )}
-      </div>
+        <div className="space-y-2">
+          <Label>Cargo *</Label>
+          <ComboboxWithAdd
+            tableName="cargos"
+            value={cargoId}
+            onChange={(id) => setValue('cargo_id', id, { shouldValidate: true })}
+            placeholder="Selecionar cargo"
+          />
+          {errors.cargo_id && (
+            <p className="text-sm text-destructive">{errors.cargo_id.message}</p>
+          )}
+        </div>
+      </FormSection>
 
-      <div className="space-y-2">
-        <Label htmlFor="whatsapp">WhatsApp</Label>
-        <Input
-          id="whatsapp"
-          {...register('whatsapp')}
-          placeholder="(11) 99999-9999"
-          inputMode="tel"
-        />
-        {errors.whatsapp && (
-          <p className="text-sm text-destructive">{errors.whatsapp.message}</p>
-        )}
-      </div>
+      <FormSection title="Comunicação" icon={PhoneIcon}>
+        <div className="space-y-2">
+          <Label htmlFor="whatsapp">WhatsApp</Label>
+          <Input
+            id="whatsapp"
+            {...register('whatsapp')}
+            placeholder="(11) 99999-9999"
+            inputMode="tel"
+            className="bg-background"
+          />
+          {errors.whatsapp && (
+            <p className="text-sm text-destructive">{errors.whatsapp.message}</p>
+          )}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          {...register('email')}
-          placeholder="email@empresa.com"
-          inputMode="email"
-        />
-        {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
-        )}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            {...register('email')}
+            placeholder="email@empresa.com"
+            inputMode="email"
+            className="bg-background"
+          />
+          {errors.email && (
+            <p className="text-sm text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+      </FormSection>
 
-      <Separator />
-
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium">Oportunidades de negócio</h3>
-
+      <FormSection title="Oportunidades" icon={TargetIcon}>
         {!showOportunidades ? (
           <Button
             type="button"
             variant="outline"
             onClick={addOportunidade}
-            className="w-full"
+            className="w-full border-dashed"
           >
             <PlusIcon className="mr-2 h-4 w-4" />
             Adicionar oportunidade para evento futuro
           </Button>
         ) : (
-          <>
-            <div className="space-y-3">
-              {oportunidades.map((opp, index) => (
-                <OportunidadeForm
-                  key={index}
-                  index={index}
-                  value={opp}
-                  onChange={(data) => updateOportunidade(index, data)}
-                  onRemove={() => removeOportunidade(index)}
-                  otherOportunidades={oportunidades.filter((_, i) => i !== index)}
-                />
-              ))}
-            </div>
+          <div className="space-y-3">
+            {oportunidades.map((opp, index) => (
+              <OportunidadeForm
+                key={index}
+                index={index}
+                value={opp}
+                onChange={(data) => updateOportunidade(index, data)}
+                onRemove={() => removeOportunidade(index)}
+                otherOportunidades={oportunidades.filter((_, i) => i !== index)}
+              />
+            ))}
             <Button
               type="button"
               variant="outline"
               onClick={addOportunidade}
-              className="w-full"
+              className="w-full border-dashed"
             >
               <PlusIcon className="mr-2 h-4 w-4" />
               Adicionar outra oportunidade
             </Button>
-          </>
+          </div>
         )}
-      </div>
+      </FormSection>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        className="w-full h-12 text-base font-semibold bg-[#f0a500] text-[#102a43] hover:bg-[#d99400]"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? 'Salvando...' : 'Salvar expositor'}
       </Button>
     </form>
