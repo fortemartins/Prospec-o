@@ -21,6 +21,10 @@ const gantari = localFont({
 export const metadata: Metadata = {
   title: "GFM Eventos - Prospecção",
   description: "App de prospecção para feiras corporativas - GFM Eventos",
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

@@ -1,11 +1,11 @@
 <svg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'>
   <rect width='512' height='512' rx='80' fill='#102a43'/>
   <!-- Diagonal stripes -->
-  <rect x='90' y='100' width='38' height='150' rx='6' transform='rotate(-15 90 100)' fill='#f0a500'/>
-  <rect x='150' y='100' width='38' height='150' rx='6' transform='rotate(-15 150 100)' fill='#f0a500'/>
-  <rect x='210' y='100' width='38' height='150' rx='6' transform='rotate(-15 210 100)' fill='#f0a500'/>
+  <rect x='58' y='130' width='30' height='120' rx='5' transform='rotate(-15 58 130)' fill='#f0a500'/>
+  <rect x='102' y='130' width='30' height='120' rx='5' transform='rotate(-15 102 130)' fill='#f0a500'/>
+  <rect x='146' y='130' width='30' height='120' rx='5' transform='rotate(-15 146 130)' fill='#f0a500'/>
   <!-- GFM text -->
-  <text x='275' y='285' font-family='Arial,Helvetica,sans-serif' font-size='155' fill='white' font-weight='900' font-style='italic' letter-spacing='-5'>GFM</text>
+  <text x='190' y='278' font-family='Arial,Helvetica,sans-serif' font-size='135' fill='white' font-weight='900' font-style='italic' letter-spacing='-5'>GFM</text>
   <!-- eventos text -->
-  <text x='310' y='350' font-family='Arial,Helvetica,sans-serif' font-size='58' fill='#f0a500' font-weight='500'>eventos</text>
+  <text x='255' y='335' font-family='Arial,Helvetica,sans-serif' font-size='50' fill='#f0a500' font-weight='500'>eventos</text>
 </svg>
