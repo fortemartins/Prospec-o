@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
+import { RegisterSW } from "@/components/register-sw";
 import "./globals.css";
 
 const gantari = localFont({
@@ -54,6 +55,7 @@ export default function RootLayout({
       className={`${gantari.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-[family-name:var(--font-gantari)]">
+        <RegisterSW />
         {children}
         <Toaster position="top-center" richColors />
       </body>

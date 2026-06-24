@@ -13,12 +13,17 @@ import {
   UsersIcon,
   CalendarIcon,
   ChevronRightIcon,
+  DownloadIcon,
+  XIcon,
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { usePwaInstall } from '@/hooks/use-pwa-install';
 
 export default function HomePage() {
   const router = useRouter();
   const { evento, hasEvent } = useActiveEvent();
+  const { canInstall, install } = usePwaInstall();
+  const [dismissed, setDismissed] = useState(false);
 
   const stats = useLiveQuery(async () => {
     const expositores = await db.empresas
@@ -45,6 +50,31 @@ export default function HomePage() {
       <AppHeader title="Prospecção" />
 
       <div className="p-4 space-y-5">
+        {/* Banner instalar app */}
+        {canInstall && !dismissed && (
+          <div className="flex items-center gap-3 rounded-lg bg-[#f0a500]/10 border border-[#f0a500]/30 px-4 py-3">
+            <DownloadIcon className="h-5 w-5 shrink-0 text-[#f0a500]" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Instalar aplicativo</p>
+              <p className="text-xs text-muted-foreground">
+                Acesse direto da tela inicial
+              </p>
+            </div>
+            <button
+              onClick={install}
+              className="shrink-0 rounded-md bg-[#f0a500] px-3 py-1.5 text-xs font-semibold text-[#102a43] transition-colors hover:bg-[#d4920a]"
+            >
+              Instalar
+            </button>
+            <button
+              onClick={() => setDismissed(true)}
+              className="shrink-0 p-1 text-muted-foreground hover:text-foreground"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         {/* Evento ativo */}
         <button
           onClick={() => router.push('/evento')}

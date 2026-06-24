@@ -10,9 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckIcon, PlusIcon, CalendarIcon } from 'lucide-react';
+import { CheckIcon, PlusIcon, CalendarIcon, Trash2Icon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+type ConfirmDelete = { id: string; nome: string; contactCount: number } | null;
 
 export default function EventoPage() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function EventoPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [novoNome, setNovoNome] = useState('');
   const [novaData, setNovaData] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<ConfirmDelete>(null);
 
   const handleCreate = async () => {
     if (!novoNome.trim()) return;
@@ -43,6 +46,24 @@ export default function EventoPage() {
     selectEvent(id);
     toast.success('Evento selecionado!');
     router.push('/');
+  };
+
+  const askDelete = async (e: React.MouseEvent, evento: { id: string; nome: string }) => {
+    e.stopPropagation();
+    const count = await db.empresas.where('evento_coleta_id').equals(evento.id).count();
+    setConfirmDelete({ id: evento.id, nome: evento.nome, contactCount: count });
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    await db.empresas.where('evento_coleta_id').equals(confirmDelete.id).delete();
+    await db.oportunidades.where('evento_futuro_id').equals(confirmDelete.id).delete();
+    await db.eventos.delete(confirmDelete.id);
+    if (eventId === confirmDelete.id) {
+      selectEvent('');
+    }
+    toast.success('Evento apagado!');
+    setConfirmDelete(null);
   };
 
   return (
@@ -87,10 +108,48 @@ export default function EventoPage() {
                       </p>
                     )}
                   </div>
+                  <button
+                    onClick={(e) => askDelete(e, evento)}
+                    className="shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-500"
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                  </button>
                 </CardContent>
               </Card>
             ))}
           </div>
+        )}
+
+        {confirmDelete && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="space-y-3 py-4">
+              <p className="text-sm font-medium text-red-900">
+                Apagar &ldquo;{confirmDelete.nome}&rdquo;?
+              </p>
+              {confirmDelete.contactCount > 0 && (
+                <p className="text-xs text-red-700">
+                  {confirmDelete.contactCount} contato{confirmDelete.contactCount !== 1 ? 's' : ''} vinculado{confirmDelete.contactCount !== 1 ? 's' : ''} também {confirmDelete.contactCount !== 1 ? 'serão apagados' : 'será apagado'}.
+                </p>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setConfirmDelete(null)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleDelete}
+                  className="flex-1 bg-red-600 text-white hover:bg-red-700"
+                >
+                  Apagar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {!showCreate ? (

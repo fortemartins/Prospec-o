@@ -5,6 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'GFM Eventos - Prospecção',
     short_name: 'GFM Prospecção',
     description: 'App de prospecção para feiras corporativas - GFM Eventos',
+    id: '/',
     start_url: '/',
     display: 'standalone',
     background_color: '#102a43',
