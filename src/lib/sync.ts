@@ -79,6 +79,7 @@ async function pullLiveListItems(tableName: string): Promise<void> {
     console.error(`Falha ao baixar ${tableName}:`, error);
     return;
   }
+  await db.table(tableName).clear();
   if (data && data.length > 0) {
     await db.table(tableName).bulkPut(data);
   }
@@ -92,8 +93,8 @@ export async function fullSync(): Promise<{
     return { success: 0, failed: 0 };
   }
 
-  await Promise.all(LIVE_LISTS.map((table) => pullLiveListItems(table)));
   await Promise.all(LIVE_LISTS.map((table) => pushLiveListItems(table)));
+  await Promise.all(LIVE_LISTS.map((table) => pullLiveListItems(table)));
 
   return await pushUnsyncedEmpresas();
 }
