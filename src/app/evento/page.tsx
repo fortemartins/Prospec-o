@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useActiveEvent } from '@/hooks/use-active-event';
 import { AppHeader } from '@/components/app-header';
 import { Button } from '@/components/ui/button';
@@ -56,10 +57,32 @@ export default function EventoPage() {
 
   const handleDelete = async () => {
     if (!confirmDelete) return;
-    await db.empresas.where('evento_coleta_id').equals(confirmDelete.id).delete();
-    await db.oportunidades.where('evento_futuro_id').equals(confirmDelete.id).delete();
-    await db.eventos.delete(confirmDelete.id);
-    if (eventId === confirmDelete.id) {
+    const id = confirmDelete.id;
+
+    // Apagar no Supabase primeiro (se configurado e online)
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = getSupabase();
+        const empresasToDelete = await db.empresas
+          .where('evento_coleta_id')
+          .equals(id)
+          .primaryKeys();
+        if (empresasToDelete.length > 0) {
+          await supabase.from('oportunidades').delete().in('empresa_id', empresasToDelete);
+          await supabase.from('empresas').delete().in('id', empresasToDelete);
+        }
+        await supabase.from('oportunidades').delete().eq('evento_futuro_id', id);
+        await supabase.from('eventos').delete().eq('id', id);
+      } catch (e) {
+        console.error('Falha ao apagar do Supabase (continua localmente):', e);
+      }
+    }
+
+    // Apagar localmente
+    await db.empresas.where('evento_coleta_id').equals(id).delete();
+    await db.oportunidades.where('evento_futuro_id').equals(id).delete();
+    await db.eventos.delete(id);
+    if (eventId === id) {
       selectEvent('');
     }
     toast.success('Evento apagado!');
