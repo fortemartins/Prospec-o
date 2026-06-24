@@ -62,11 +62,27 @@ export async function pushUnsyncedEmpresas(): Promise<{
 }
 
 async function pushLiveListItems(tableName: string): Promise<void> {
-  const items = await db.table(tableName).toArray();
-  if (items.length > 0) {
-    const { error } = await getSupabase()
+  const supabase = getSupabase();
+  const localItems = await db.table(tableName).toArray();
+  const localIds = new Set(localItems.map((item: { id: string }) => item.id));
+
+  const { data: remoteItems } = await supabase.from(tableName).select('id');
+  const idsToDelete = (remoteItems || [])
+    .map((item: { id: string }) => item.id)
+    .filter((id: string) => !localIds.has(id));
+
+  if (idsToDelete.length > 0) {
+    if (tableName === 'eventos') {
+      await supabase.from('oportunidades').delete().in('evento_futuro_id', idsToDelete);
+      await supabase.from('empresas').delete().in('evento_coleta_id', idsToDelete);
+    }
+    await supabase.from(tableName).delete().in('id', idsToDelete);
+  }
+
+  if (localItems.length > 0) {
+    const { error } = await supabase
       .from(tableName)
-      .upsert(items, { onConflict: 'id' });
+      .upsert(localItems, { onConflict: 'id' });
     if (error) {
       console.error(`Falha ao sincronizar ${tableName}:`, error);
     }
