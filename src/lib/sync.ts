@@ -92,13 +92,8 @@ export async function fullSync(): Promise<{
     return { success: 0, failed: 0 };
   }
 
-  for (const table of LIVE_LISTS) {
-    await pullLiveListItems(table);
-  }
-
-  for (const table of LIVE_LISTS) {
-    await pushLiveListItems(table);
-  }
+  await Promise.all(LIVE_LISTS.map((table) => pullLiveListItems(table)));
+  await Promise.all(LIVE_LISTS.map((table) => pushLiveListItems(table)));
 
   return await pushUnsyncedEmpresas();
 }
